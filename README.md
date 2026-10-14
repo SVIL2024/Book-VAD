@@ -102,3 +102,44 @@ python -m pytest tests -q     # 回归测试
 ## 许可
 
 代码采用 MIT 许可，见 [LICENSE](LICENSE)。书籍正文版权归作者所有。
+
+## 发布到 GitHub / Gitee（维护者操作）
+
+仓库已初始化 git 并完成首次提交，**尚未推送到任何远端**。推���前请先把下述占位地址
+（`your-account`）替换为你自己的账号。
+
+```bash
+# 1. GitHub
+git remote add github   https://github.com/<你的账号>/vad-book-code.git
+git push -u github main
+
+# 2. Gitee（国内可达，建议同时推送，书中前言已注明两个入口）
+git remote add gitee    https://gitee.com/<你的账号>/vad-book-code.git
+git push -u gitee main
+
+# 3. 打标签，与书籍版本对应
+git tag -a v1.0 -m "对应《视频异常事件检测原理及应用》2024 年版"
+git push github v1.0 && git push gitee v1.0
+```
+
+推送后请回填书籍前言中的两个占位链接：
+
+- `TeX_files/chapter-0-preface.tex` 中
+  `\url{https://github.com/your-account/vad-book-code}` 与
+  `\url{https://gitee.com/your-account/vad-book-code}`
+
+修改后需重跑 LaTeX 编译与 DOCX 流水线（见书籍仓库 `AGENTS.md`）。
+
+### 发布前自检
+
+```bash
+python -m pytest tests -q     # 应为 9 passed
+python demos/run_demo.py      # 应能完整跑完 3 个阶段
+```
+
+### 版本维护约定
+
+- 书籍正文修订后，须重新运行 `extract_companion_code.py` 同步 `code/`，
+  再提交并更新标签；**不要手工编辑 `code/` 下的文件**，否则会与书中印刷内容脱节。
+- 每处修复建议同时补一条回归测试，避免缺陷重现。
+
