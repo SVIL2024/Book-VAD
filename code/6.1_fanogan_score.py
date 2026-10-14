@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# 配套代码 6.1 —— 《视频异常事件检测原理及应用》第6章 深度学习视频异常检测方法
+# 配套代码 6.1 —— 《视频异常检测原理及应用》第6章 深度学习视频异常检测方法
 # 题注：f-AnoGAN 异常分数计算示例
 # 本文件由 _check/extract_companion_code.py 从 TeX_files/chapter-6-dl-methods.tex 自动抽取，
 # 与书中印刷代码逐字一致；请勿直接在此修改，需改请改 LaTeX 源后重新抽取。
