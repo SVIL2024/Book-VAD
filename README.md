@@ -8,12 +8,17 @@
 | 项目 | 内容 |
 |---|---|
 | 对应书版 | 2024 年版（正文 171 页） |
-| 书中代码清单 | 共 7 处，编号 3.1–3.2、4.1、5.1、6.1、7.1–7.2 |
-| 本仓库文件 | `code/` 下 7 个 `.py`，文件名即清单编号 |
+| 书中代码清单 | 共 10 处，编号 3.1–3.2、4.1、5.1、6.1–6.4、7.1–7.2 |
+| 本仓库文件 | `code/` 下 10 个 `.py`，文件名即清单编号 |
 
 **代码一致性保证**：`code/` 下的文件由 `E:\paper\monograph\_check\extract_companion_code.py`
-从 LaTeX 源文件 `TeX_files/*.tex` 自动抽取，与书中印刷内容**逐字一致**。
-若需修改，请改 LaTeX 源后重新抽取，**不要直接编辑本目录**，否则会与书籍脱节。
+自动抽取，来源分两类：
+
+- **内联清单**（3.1–3.2、4.1、5.1、6.2、7.1–7.2）取自 `TeX_files/*.tex`，与书中印刷内容**逐字一致**；
+- **整文件清单**（6.1、6.3、6.4）取自 `monograph/code_src/*.py` 的**完整文件**；书中受版面限制
+  只摘录其核心片段（`manifest.json` 的 `book_excerpt` 字段记录了摘录行号），完整可运行版本在本仓库。
+
+两类文件都**不手工编辑 `code/`**，需改请改源头后重新抽取，否则会与书籍脱节。
 
 ## 目录结构
 
@@ -22,14 +27,17 @@
 ├── README.md              本文件
 ├── requirements.txt       依赖与版本
 ├── manifest.json          清单编号 / 文件名 / 题注的机器可读对照
-├── code/                  书中 7 处代码清单（与书逐字一致）
-│   ├── 3.1_optical_flow.py           第3章  稠密光流计算
-│   ├── 3.2_frame_loading.py          第3章  帧读取、缩放与归一化
+├── code/                  书中 10 处代码清单
+│   ├── 3.1_optical_flow.py            第3章  稠密光流计算
+│   ├── 3.2_frame_loading.py           第3章  帧读取、缩放与归一化
 │   ├── 4.1_mhof_chi_square.py         第4章  光流直方图 + 卡方距离异常分数
-│   ├── 5.1_vae_loss.py               第5章  VAE 训练损失
-│   ├── 6.1_fanogan_score.py          第6章  f-AnoGAN 异常分数
-│   ├── 7.1_frame_metrics.py          第7章  帧级指标与事件合并
-│   └── 7.2_seed_sensitivity.py       第7章  随机种子敏感性分析
+│   ├── 5.1_vae_loss.py                第5章  VAE 训练损失
+│   ├── 6.1_dualstream_reconstruct.py  第6章  双流时空自编码器重构误差融合（书中摘录 12–34 行）
+│   ├── 6.2_fanogan_score.py           第6章  f-AnoGAN 异常分数
+│   ├── 6.3_memory_bank.py             第6章  记忆库 Coreset + 最近邻异常分数（书中摘录 42–62 行）
+│   ├── 6.4_rtfm.py                    第6章  RTFM 特征幅值对比损失（书中摘录 13–28 行）
+│   ├── 7.1_frame_metrics.py           第7章  帧级指标与事件合并
+│   └── 7.2_seed_sensitivity.py        第7章  随机种子敏感性分析
 ├── demos/
 │   └── run_demo.py         端到端演示（合成视频，无需数据集）
 ├── tests/
@@ -81,7 +89,7 @@ python -m pytest tests -q     # 回归测试
 
 守护用例：`test_mhof_separates_horizontal_and_vertical`、`test_mhof_uses_all_direction_bins`。
 
-**2. 代码清单 6.1：f-AnoGAN 异常分数维度不匹配**
+**2. 代码清单 6.2：f-AnoGAN 异常分数维度不匹配**
 
 原实现中 `a_res` 形状为 `(N,)`，而 `a_feat = torch.norm(..., dim=1)` 仅归约通道维、
 得到 `(N, H, W)`，两者相加直接抛出 `RuntimeError`。
@@ -95,8 +103,11 @@ python -m pytest tests -q     # 回归测试
 
 - 第 3、7 章的部分代码在函数外直接执行，需要真实文件或模型；
   仓库中通过 `demos/` 提供合成数据使其可运行，但**不构成端到端训练/评测流水线**。
-- 第 5、6 章仅覆盖 VAE 损失与 f-AnoGAN 打分两个片段，
-  **尚未覆盖书中第 6.10 节（弱监督与视觉—语言模型）等当前主流范式**。
+- 第 5、6 章覆盖 VAE 损失、双流重构、记忆库、f-AnoGAN 与 RTFM 五个片段；
+  其中 6.1、6.3、6.4 三个模块自带合成数据自测，可独立跑通，但仍**不是完整训练/评测流水线**
+  （无真实数据集输入、未复现原论文的超参与性能数字）。
+- 弱监督范式由代码清单 6.4（RTFM，书中 6.4.2 节）代表；书中 6.10 节的**视觉—语言模型**
+  分支（VadCLIP、LAVAD）属第三方工作，本仓库不再重复实现，书中已给出其官方仓库链接。
 - 本仓库只做方法演示，**不含任何数据集**，也未复现论文报告的性能数字。
 
 ## 许可
@@ -133,7 +144,7 @@ git push github v1.0 && git push gitee v1.0
 ### 发布前自检
 
 ```bash
-python -m pytest tests -q     # 应为 9 passed
+python -m pytest tests -q     # 应为 18 passed
 python demos/run_demo.py      # 应能完整跑完 3 个阶段
 ```
 

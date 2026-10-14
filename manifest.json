@@ -4,48 +4,79 @@
     "chapter": 3,
     "file": "3.1_optical_flow.py",
     "caption": "光流计算示例",
-    "lines": 15
+    "lines": 15,
+    "book_excerpt": "全文"
   },
   {
     "number": "3.2",
     "chapter": 3,
     "file": "3.2_frame_loading.py",
     "caption": "视频帧读取、缩放与归一化示例",
-    "lines": 10
+    "lines": 10,
+    "book_excerpt": "全文"
   },
   {
     "number": "4.1",
     "chapter": 4,
     "file": "4.1_mhof_chi_square.py",
     "caption": "光流直方图与卡方距离异常分数示例",
-    "lines": 30
+    "lines": 30,
+    "book_excerpt": "全文"
   },
   {
     "number": "5.1",
     "chapter": 5,
     "file": "5.1_vae_loss.py",
     "caption": "VAE 训练损失示例",
-    "lines": 11
+    "lines": 11,
+    "book_excerpt": "全文"
   },
   {
     "number": "6.1",
     "chapter": 6,
-    "file": "6.1_fanogan_score.py",
+    "file": "6.1_dualstream_reconstruct.py",
+    "caption": "双流时空自编码器重构误差融合示例",
+    "lines": 148,
+    "book_excerpt": "12-34"
+  },
+  {
+    "number": "6.2",
+    "chapter": 6,
+    "file": "6.2_fanogan_score.py",
     "caption": "f-AnoGAN 异常分数计算示例",
-    "lines": 13
+    "lines": 13,
+    "book_excerpt": "全文"
+  },
+  {
+    "number": "6.3",
+    "chapter": 6,
+    "file": "6.3_memory_bank.py",
+    "caption": "记忆库 Coreset 抽样与最近邻异常分数示例",
+    "lines": 110,
+    "book_excerpt": "42-62"
+  },
+  {
+    "number": "6.4",
+    "chapter": 6,
+    "file": "6.4_rtfm.py",
+    "caption": "RTFM 特征幅值对比损失示例",
+    "lines": 107,
+    "book_excerpt": "13-28"
   },
   {
     "number": "7.1",
     "chapter": 7,
     "file": "7.1_frame_metrics.py",
     "caption": "帧级指标与事件合并示例",
-    "lines": 22
+    "lines": 22,
+    "book_excerpt": "全文"
   },
   {
     "number": "7.2",
     "chapter": 7,
     "file": "7.2_seed_sensitivity.py",
     "caption": "随机种子敏感性分析示例",
-    "lines": 13
+    "lines": 13,
+    "book_excerpt": "全文"
   }
 ]

@@ -103,10 +103,10 @@ def test_vae_kl_is_zero_for_standard_normal_posterior():
     assert kl == pytest.approx(0.0, abs=1e-5)
 
 
-# --------------------------------------------------------------- 6.1 f-AnoGAN
+# --------------------------------------------------------------- 6.2 f-AnoGAN
 def test_fanogan_score_is_zero_for_identity_reconstruction():
     torch = pytest.importorskip('torch')
-    fg = load('6.1_fanogan_score.py')
+    fg = load('6.2_fanogan_score.py')
 
     class Id(torch.nn.Module):
         def forward(self, z):
@@ -132,7 +132,7 @@ def test_fanogan_score_is_zero_for_identity_reconstruction():
 
 def test_fanogan_lambda_extremes():
     torch = pytest.importorskip('torch')
-    fg = load('6.1_fanogan_score.py')
+    fg = load('6.2_fanogan_score.py')
 
     class Enc(torch.nn.Module):
         def __init__(self):
@@ -180,3 +180,92 @@ def test_frame_listing_and_optical_flow_on_synthetic_frames():
     assert flow.shape == g1.shape + (2,)
     u = flow[..., 0]
     assert u.mean() == pytest.approx(3.0, abs=0.5), '向右平移 3 像素，u 均值应约为 3'
+
+
+# ---------------------------------------------------------- 6.1 双流重构
+def test_dualstream_fusion_score_matches_formula():
+    torch = pytest.importorskip('torch')
+    ds = load('6.1_dualstream_reconstruct.py')
+    torch.manual_seed(0)
+    x, x_hat = torch.randn(2, 3, 8, 8), torch.randn(2, 3, 8, 8)
+    d, d_hat = torch.randn(2, 3, 8, 8), torch.randn(2, 3, 8, 8)
+    s = ds.fusion_score(x, x_hat, d, d_hat, lam=0.5)
+    app = (x - x_hat).pow(2).flatten(1).sum(1)
+    mot = (d - d_hat).pow(2).flatten(1).sum(1)
+    expected = 0.5 * app + 0.5 * mot
+    assert s.shape == (2,)
+    assert torch.allclose(s, expected, rtol=1e-5)
+    assert torch.all(s >= 0)
+
+
+def test_dualstream_lambda_extremes_select_single_stream():
+    torch = pytest.importorskip('torch')
+    ds = load('6.1_dualstream_reconstruct.py')
+    torch.manual_seed(0)
+    x, x_hat = torch.randn(2, 3, 8, 8), torch.randn(2, 3, 8, 8)
+    d, d_hat = torch.randn(2, 3, 8, 8), torch.randn(2, 3, 8, 8)
+    app = (x - x_hat).pow(2).flatten(1).sum(1)
+    mot = (d - d_hat).pow(2).flatten(1).sum(1)
+    assert torch.allclose(ds.fusion_score(x, x_hat, d, d_hat, lam=0.0), mot, rtol=1e-5)
+    assert torch.allclose(ds.fusion_score(x, x_hat, d, d_hat, lam=1.0), app, rtol=1e-5)
+
+
+def test_dualstream_motion_repr_shrinks_time_axis():
+    torch = pytest.importorskip('torch')
+    ds = load('6.1_dualstream_reconstruct.py')
+    d = ds.motion_repr(torch.randn(2, 5, 3, 8, 8))
+    assert d.shape == (2, 4, 3, 8, 8)
+
+
+# ---------------------------------------------------------- 6.3 记忆库
+def test_memory_bank_member_scores_zero():
+    torch = pytest.importorskip('torch')
+    mb = load('6.3_memory_bank.py')
+    torch.manual_seed(0)
+    feats = torch.randn(50, 16)
+    bank = mb.MemoryBank(feats)
+    s = bank.score(feats)
+    assert s.shape == (50,)
+    assert torch.allclose(s, torch.zeros_like(s), atol=1e-5), '库内样本自身即最近邻，分数应为 0'
+
+
+def test_memory_bank_scores_far_point_higher():
+    torch = pytest.importorskip('torch')
+    mb = load('6.3_memory_bank.py')
+    torch.manual_seed(0)
+    feats = torch.randn(50, 16)
+    bank = mb.MemoryBank(feats)
+    far = torch.randn(1, 16) * 20.0
+    assert bank.score(far).item() > bank.score(feats[:1]).item()
+
+
+def test_coreset_reduces_to_requested_prototype_count():
+    torch = pytest.importorskip('torch')
+    mb = load('6.3_memory_bank.py')
+    torch.manual_seed(0)
+    feats = torch.randn(200, 16)
+    bank = mb.MemoryBank(feats, n_prototypes=10, seed=0)
+    assert bank.memory.shape[0] == 10
+
+
+# ---------------------------------------------------------- 6.4 RTFM
+def test_rtfm_loss_zero_when_margin_already_satisfied():
+    torch = pytest.importorskip('torch')
+    rt = load('6.4_rtfm.py')
+    loss = rt.rtfm_loss(torch.full((4,), 0.1), torch.full((4,), 1.0), margin=0.5)
+    assert loss.item() == pytest.approx(0.0), '正常幅值已比异常低出 margin，损失应为 0'
+
+
+def test_rtfm_loss_equals_slack_when_margin_unmet():
+    torch = pytest.importorskip('torch')
+    rt = load('6.4_rtfm.py')
+    loss = rt.rtfm_loss(torch.tensor([1.0]), torch.tensor([1.0]), margin=0.5)
+    assert loss.item() == pytest.approx(0.5)
+
+
+def test_feature_magnitude_is_l2_norm_over_time_and_dim():
+    torch = pytest.importorskip('torch')
+    rt = load('6.4_rtfm.py')
+    mag = rt.feature_magnitude(torch.ones(3, 2, 4))
+    assert mag.shape == (3,)
+    assert mag[0].item() == pytest.approx(8 ** 0.5)
